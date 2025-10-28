@@ -1,7 +1,6 @@
 package io.olezhabobrov
 
 import kotlinx.atomicfu.AtomicInt
-import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlinx.atomicfu.atomic
 
 class ConcurrentSearchTree {
@@ -9,7 +8,6 @@ class ConcurrentSearchTree {
     private class TreeNode(val key: Int, val value: AtomicInt) {
         var leftChild = atomic<TreeNode?>(null)
         var rightChild = atomic<TreeNode?>(null)
-        val lock = ReentrantReadWriteLock()
     }
 
     private var rootTree = atomic<TreeNode?>(null)
