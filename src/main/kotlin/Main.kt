@@ -1,16 +1,30 @@
 package io.olezhabobrov
 
+import java.util.concurrent.Executors
+import kotlin.random.Random
+
 fun main() {
     val tree = ConcurrentSearchTree()
+    val threadCount = 10
+    val insertsPerThread = 10000
 
-    tree.add(1)
-    tree.add(2)
-    tree.add(-1)
-    tree.add(3)
+    val executor = Executors.newFixedThreadPool(threadCount)
 
-    println(tree.get(0))
-    println(tree.get(1))
-    println(tree.get(2))
-    println(tree.get(3))
-    println(tree.get(4))
+    repeat(threadCount) { threadIndex ->
+        executor.submit {
+            val rnd = Random(threadIndex)
+            repeat(insertsPerThread) {
+                val value = rnd.nextInt(-100, 101)
+                tree.add(value)
+            }
+            println("Thread $threadIndex done")
+        }
+    }
+
+    executor.shutdown()
+    while (!executor.isTerminated) {
+        Thread.sleep(10)
+    }
+
+    println("All threads finished.")
 }
