@@ -19,6 +19,7 @@ class ConcurrentSearchTree {
 
         while (true) {
             while (placeForNewNode.value != null) {
+                // When we add a node, it is there forever. It can't become null.
                 val currentNode = placeForNewNode.value!!
                 if (inputKey == currentNode.key) {
                     currentNode.value.getAndSet(inputValue)
@@ -32,6 +33,8 @@ class ConcurrentSearchTree {
                 }
             }
 
+            // Check if we found a leaf. Another thread could have already added here a node.
+            // It is safe to continue looking for a leaf in this subtree, as we don't rebalance a tree.
             if (placeForNewNode.compareAndSet(null, newNode)) {
                 return
             }
@@ -41,6 +44,7 @@ class ConcurrentSearchTree {
     fun get(inputKey: Int): Int? {
         var currentAtomicNode = rootTree
         while (currentAtomicNode.value != null) {
+            // When we add a node, it is there forever. It can't become null.
             val currentNode = currentAtomicNode.value!!
             if (currentNode.key == inputKey) {
                 return currentNode.value.value
