@@ -14,9 +14,8 @@ fun main() {
         executor.submit {
             val rnd = Random(threadIndex)
             repeat(insertsPerThread) {
-                val key = rnd.nextInt(0, 1000)
-//                val value = rnd.nextInt(-100, 101)
-                tree.add(key, key)
+                rnd.nextBytes(10)
+                tree.add(rnd.nextBytes(10), rnd.nextBytes(10))
             }
             println("Thread $threadIndex done")
         }
@@ -28,8 +27,4 @@ fun main() {
     }
 
     println("All threads finished.")
-
-    for (i in 0..1000) {
-        println(tree.get(i))
-    }
 }

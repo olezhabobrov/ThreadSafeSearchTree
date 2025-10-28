@@ -1,18 +1,29 @@
 package io.olezhabobrov
 
-import kotlinx.atomicfu.AtomicInt
+import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
+
+fun ByteArray.less(other: ByteArray): Boolean {
+    val minLength = minOf(this.size, other.size)
+    for (i in 0 until minLength) {
+        val diff = (this[i].toInt() and 0xFF) - (other[i].toInt() and 0xFF)
+        if (diff != 0) {
+            return diff < 0
+        }
+    }
+    return this.size < other.size
+}
 
 class ConcurrentSearchTree {
 
-    private class TreeNode(val key: Int, val value: AtomicInt) {
+    private class TreeNode(val key: ByteArray, val value: AtomicRef<ByteArray>) {
         var leftChild = atomic<TreeNode?>(null)
         var rightChild = atomic<TreeNode?>(null)
     }
 
     private var rootTree = atomic<TreeNode?>(null)
 
-    fun add(inputKey: Int, inputValue: Int) {
+    fun add(inputKey: ByteArray, inputValue: ByteArray) {
         val newNode = TreeNode(inputKey, atomic(inputValue))
 
         var placeForNewNode = rootTree
@@ -21,12 +32,12 @@ class ConcurrentSearchTree {
             while (placeForNewNode.value != null) {
                 // When we add a node, it is there forever. It can't become null.
                 val currentNode = placeForNewNode.value!!
-                if (inputKey == currentNode.key) {
+                if (inputKey.contentEquals(currentNode.key)) {
                     currentNode.value.getAndSet(inputValue)
                     return
                 }
 
-                if (inputKey < currentNode.key) {
+                if (inputKey.less(currentNode.key)) {
                     placeForNewNode = currentNode.leftChild
                 } else {
                     placeForNewNode = currentNode.rightChild
@@ -41,15 +52,15 @@ class ConcurrentSearchTree {
         }
     }
 
-    fun get(inputKey: Int): Int? {
+    fun get(inputKey: ByteArray): ByteArray? {
         var currentAtomicNode = rootTree
         while (currentAtomicNode.value != null) {
             // When we add a node, it is there forever. It can't become null.
             val currentNode = currentAtomicNode.value!!
-            if (currentNode.key == inputKey) {
+            if (currentNode.key.contentEquals(inputKey)) {
                 return currentNode.value.value
             }
-            if (inputKey < currentNode.key) {
+            if (inputKey.less(currentNode.key)) {
                 currentAtomicNode = currentNode.leftChild
             } else {
                 currentAtomicNode = currentNode.rightChild
