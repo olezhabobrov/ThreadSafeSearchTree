@@ -16,6 +16,7 @@ fun ByteArray.less(other: ByteArray): Boolean {
 
 class ConcurrentSearchTree {
 
+    // Key is never changed, but corresponding value can be.
     private class TreeNode(val key: ByteArray, val value: AtomicRef<ByteArray>) {
         var leftChild = atomic<TreeNode?>(null)
         var rightChild = atomic<TreeNode?>(null)
