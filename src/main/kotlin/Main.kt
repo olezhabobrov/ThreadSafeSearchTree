@@ -5,8 +5,8 @@ import kotlin.random.Random
 
 fun main() {
     val tree = ConcurrentSearchTree()
-    val threadCount = 10
-    val insertsPerThread = 10000
+    val threadCount = 100
+    val insertsPerThread = 20
 
     val executor = Executors.newFixedThreadPool(threadCount)
 
@@ -14,8 +14,9 @@ fun main() {
         executor.submit {
             val rnd = Random(threadIndex)
             repeat(insertsPerThread) {
-                val value = rnd.nextInt(-100, 101)
-                tree.add(value)
+                val key = rnd.nextInt(0, 1000)
+//                val value = rnd.nextInt(-100, 101)
+                tree.add(key, key)
             }
             println("Thread $threadIndex done")
         }
@@ -27,4 +28,8 @@ fun main() {
     }
 
     println("All threads finished.")
+
+    for (i in 0..1000) {
+        println(tree.get(i))
+    }
 }

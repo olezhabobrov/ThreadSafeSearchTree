@@ -1,11 +1,12 @@
 package io.olezhabobrov
 
+import kotlinx.atomicfu.AtomicInt
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlinx.atomicfu.atomic
 
 class ConcurrentSearchTree {
 
-    private class TreeNode(val value: Int) {
+    private class TreeNode(val key: Int, val value: AtomicInt) {
         var leftChild = atomic<TreeNode?>(null)
         var rightChild = atomic<TreeNode?>(null)
         val lock = ReentrantReadWriteLock()
@@ -13,15 +14,20 @@ class ConcurrentSearchTree {
 
     private var rootTree = atomic<TreeNode?>(null)
 
-    fun add(inputValue: Int) {
-        val newNode = TreeNode(inputValue)
+    fun add(inputKey: Int, inputValue: Int) {
+        val newNode = TreeNode(inputKey, atomic(inputValue))
 
         var placeForNewNode = rootTree
 
         while (true) {
             while (placeForNewNode.value != null) {
                 val currentNode = placeForNewNode.value!!
-                if (inputValue < currentNode.value) {
+                if (inputKey == currentNode.key) {
+                    currentNode.value.getAndSet(inputValue)
+                    return
+                }
+
+                if (inputKey < currentNode.key) {
                     placeForNewNode = currentNode.leftChild
                 } else {
                     placeForNewNode = currentNode.rightChild
@@ -29,23 +35,23 @@ class ConcurrentSearchTree {
             }
 
             if (placeForNewNode.compareAndSet(null, newNode)) {
-                break;
+                return
             }
         }
     }
 
-    fun get(inputValue: Int): Boolean {
+    fun get(inputKey: Int): Int? {
         var currentNode = rootTree
         while (currentNode.value != null) {
-            if (currentNode.value!!.value == inputValue) {
-                return true
+            if (currentNode.value!!.key == inputKey) {
+                return currentNode.value!!.value.value
             }
-            if (inputValue < currentNode.value!!.value) {
+            if (inputKey < currentNode.value!!.key) {
                 currentNode = currentNode.value!!.leftChild
             } else {
                 currentNode = currentNode.value!!.rightChild
             }
         }
-        return false
+        return null
     }
 }
