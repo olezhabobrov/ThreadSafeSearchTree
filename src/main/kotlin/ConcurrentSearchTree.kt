@@ -41,15 +41,16 @@ class ConcurrentSearchTree {
     }
 
     fun get(inputKey: Int): Int? {
-        var currentNode = rootTree
-        while (currentNode.value != null) {
-            if (currentNode.value!!.key == inputKey) {
-                return currentNode.value!!.value.value
+        var currentAtomicNode = rootTree
+        while (currentAtomicNode.value != null) {
+            val currentNode = currentAtomicNode.value!!
+            if (currentNode.key == inputKey) {
+                return currentNode.value.value
             }
-            if (inputKey < currentNode.value!!.key) {
-                currentNode = currentNode.value!!.leftChild
+            if (inputKey < currentNode.key) {
+                currentAtomicNode = currentNode.leftChild
             } else {
-                currentNode = currentNode.value!!.rightChild
+                currentAtomicNode = currentNode.rightChild
             }
         }
         return null
