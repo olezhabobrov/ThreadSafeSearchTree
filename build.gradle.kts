@@ -12,6 +12,7 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
+    implementation("org.jetbrains.kotlinx:atomicfu:0.24.0")
 }
 
 tasks.test {
